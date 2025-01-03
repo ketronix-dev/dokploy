@@ -9,6 +9,8 @@ import dynamic from "next/dynamic";
 import type React from "react";
 import type { ReactElement } from "react";
 import superjson from "superjson";
+import { getLocale, serverSideTranslations } from "@/utils/i18n";
+
 
 const ShowWelcomeDokploy = dynamic(
 	() =>
@@ -38,6 +40,7 @@ export async function getServerSideProps(
 	ctx: GetServerSidePropsContext<{ serviceId: string }>,
 ) {
 	const { req, res } = ctx;
+	const locale = await getLocale(req.cookies);
 	const { user, session } = await validateRequest(req, res);
 
 	const helpers = createServerSideHelpers({
@@ -63,8 +66,10 @@ export async function getServerSideProps(
 		};
 	}
 	return {
-		props: {
-			trpcState: helpers.dehydrate(),
-		},
-	};
+        props: {
+            trpcState: helpers.dehydrate(),
+            ...(await serverSideTranslations(locale, ["projects"])),
+        },
+    };
 }
+
